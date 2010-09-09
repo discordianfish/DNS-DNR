@@ -1,0 +1,11 @@
+Build.PL
+Changes
+examples/dnr.cgi
+examples/dnr.conf
+lib/DNS/DNR.pm
+MANIFEST			This list of files
+README
+t/00-load.t
+t/boilerplate.t
+t/pod-coverage.t
+t/pod.t
