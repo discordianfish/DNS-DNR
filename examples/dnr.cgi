@@ -1,4 +1,4 @@
-#!/opt/perl/bin/perl
+#!/usr/bin/env perl
 # $Id: gallery.cgi 172 2008-11-12 12:25:41Z fish $
 
 use strict;
