@@ -110,7 +110,7 @@ sub rm_update
 	{
 		$self->update($name, $rdata);
 	}
-	return "Done";
+	return "@names -> $rdata: Done";
 }
 
 =head2 update
@@ -129,28 +129,34 @@ sub update
 	my @labels = split /\./, $name;
 	#( gaia, 42o, de ]
 	
-	push @owner_p, shift @labels while not $self->is_zone(@labels);
+    push @owner_p, shift @labels while not $self->is_zone(@labels);
     my $zone = join '.', @labels;
     my $owner = join '.', @owner_p;
     my $time = time;
 
 	my $sth;
-    $sth = $self->dbh->prepare(join ',', $self->config_param('global.select_soa_sql')) or die $!;
-    $sth->execute('SOA', $zone);
+    $sth = $self->dbh->prepare(join ',', $self->config_param('global.select_soa_sql'))
+        or die $DBI::errstr;
+
+    $sth->execute('SOA', $zone)
+	or die 'could not get soa records: ' . $DBI::errstr;
+
     my @soa = split /\s+/, ($sth->fetchrow_array)[0];
-    use Data::Dumper;
-    warn Dumper(\@soa);
 
 	warn "adding $owner in $zone (" . join ' ', @soa . ")\n\n";
     $soa[2]++; # serial is defined as third space deiimited element in soa record
 
 
    
-    $sth = $self->dbh->prepare( join ',', $self->config_param('global.update_sql') ) or die $!;
-	$sth->execute($rdata, $time, 'A', $name, $zone) or die "could not update: $!";
+    $sth = $self->dbh->prepare( join ',', $self->config_param('global.update_sql') )
+        or die $DBI::errstr;
 
-    $sth = $self->dbh->prepare($self->config_param('global.update_soa_sql')) or die $!;
-    $sth->execute(join(' ', @soa), 'SOA', $zone) or die "could not update: $!";
+	$sth->execute($rdata, $time, 'A', $name, $zone) or die 'could not update: ' . $DBI::errstr;
+
+    $sth = $self->dbh->prepare($self->config_param('global.update_soa_sql'))
+        or die $DBI::errstr;
+
+    $sth->execute(join(' ', @soa), 'SOA', $zone) or die 'could not update: '. $DBI::errstr;
 }
 
 =head2 is_zone
